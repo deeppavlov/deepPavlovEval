@@ -1,0 +1,1 @@
+from deeppavlov.models.embedders.glove_embedder import GloVeEmbedder

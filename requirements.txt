@@ -1,0 +1,6 @@
+deeppavlov
+tensorflow-hub==0.1.1
+pybind11==2.2.3
+git+https://github.com/deepmipt/fastText.git#egg=fastText==0.8.22
+gensim==2.3.0
+tensorflow-gpu==1.10.0
