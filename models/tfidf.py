@@ -3,7 +3,9 @@ from deeppavlov.models.sklearn.sklearn_component import SklearnComponent
 
 
 class TfidfEmbedder:
-    def __init__(self, save_path="vocabs/tfidf.pkl", load_path="vocabs/tfidf.pkl", **kwargs):
+    def __init__(self, save_path="vocabs/tfidf.pkl", load_path=None, **kwargs):
+        load_path = load_path or save_path
+
         self.model = SklearnComponent(save_path=save_path,
                                       load_path=load_path,
                                       model_class="sklearn.feature_extraction.text:TfidfVectorizer",
@@ -17,10 +19,15 @@ class TfidfEmbedder:
 
     def load(self, fname: str = None):
         self.model.load(fname)
+    
+    def fit(self, *args):
+        self.model.fit(*args)
 
 
 class CountEmbedder:
-    def __init__(self, save_path="vocabs/count.pkl", load_path="vocabs/count.pkl", **kwargs):
+    def __init__(self, save_path="vocabs/count.pkl", load_path=None, **kwargs):
+        load_path = load_path or save_path
+
         self.model = SklearnComponent(save_path=save_path,
                                       load_path=load_path,
                                       model_class="sklearn.feature_extraction.text:CountVectorizer",
@@ -35,3 +42,6 @@ class CountEmbedder:
 
     def load(self, fname: str = None):
         self.model.load(fname)
+
+    def fit(self, *args):
+        self.model.fit(*args)

@@ -77,11 +77,18 @@ def _get_embeddings(embedder, dataset):
     labels = []
 
     for sent1, label in dataset:
-        sents1.append(word_tokenize(sent1))
+        sents1.append(_maybe_tokenize(sent1))
         labels.append(label)
 
     s1_emb = np.array(embedder(sents1))
     return s1_emb, labels
+
+
+def _maybe_tokenize(x):
+    if isinstance(x, str):
+        return word_tokenize(x)
+    else:
+        return x
 
 
 def _get_embeddings_pairwise(embedder, dataset):
@@ -90,8 +97,8 @@ def _get_embeddings_pairwise(embedder, dataset):
     labels = []
 
     for (sent1, sent2), label in dataset:
-        sents1.append(word_tokenize(sent1))
-        sents2.append(word_tokenize(sent2))
+        sents1.append(_maybe_tokenize(sent1))
+        sents2.append(_maybe_tokenize(sent2))
         labels.append(label)
 
     s1_emb = np.array(embedder(sents1))
