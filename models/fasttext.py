@@ -1,1 +1,0 @@
-from deeppavlov.models.embedders.fasttext_embedder import FasttextEmbedder
