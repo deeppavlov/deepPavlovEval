@@ -85,7 +85,7 @@ class Evaluator:
             kwargs.pop(kwarg)
         return kwargs
     
-    def add_task(self, task_name, dataset_dict, task_type='classification'):
+    def add_task(self, dataset_dict, task_name, task_type='classification'):
         """
         Add custom task to evaluator.
         
@@ -111,7 +111,7 @@ class Evaluator:
         else:
             raise ValueError(task_type)
 
-    def evaluate(self, embedder, model_name=None):
+    def evaluate(self, embedder, model_name=None, tasks=None):
         """
         Evaluate embedder on tasks
 
@@ -120,11 +120,15 @@ class Evaluator:
                       batch_size fixed size vectors for batch of sentences
             model_name: used for global results logging
                         default: type(embedder)
+            tasks: tasks for evaluation on, default is all
         """
+        tasks = tasks or list(self.task2data.keys())
         results = {}
         model_name = model_name or type(embedder)
 
         for task, data in self.task2data.items():
+            if task not in tasks:
+                continue
             if task in self.semantic_similarity_tasks:
                 results[task] = evaluate_embedder_pairwise(embedder, data)
             elif task in self.paraphraser_tasks:
