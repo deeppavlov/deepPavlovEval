@@ -6,13 +6,14 @@ Currently we support the following tasks:
 
 |  Task                         | Dataset           | Dataset URL                                                            |
 |-------------------------------|-------------------|------------------------------------------------------------------------|
-|  Paraphrase detection         | Paraphraser       | http://files.deeppavlov.ai/deeppavlov_data/paraphrase_ident_qqp.tar.gz |
+|  Paraphrase detection         | Paraphraser       | http://paraphraser.ru/                                                 |
 |  Semantic textual similarity  | translated MSRVid | http://files.deeppavlov.ai/datasets/STS2012_MSRvid_translated.tar.gz   |
 |  Natural language inference   | XNLI              | http://www.nyu.edu/projects/bowman/xnli/                               |
 |  Sentiment analysis           | Rusentiment       | http://text-machine.cs.uml.edu/projects/rusentiment/                   |
 
 MSRVid is part of SEMEVAL-2012 TASK 17 dataset. It was automatically translated and checked manually. Original dataset and licence can be found [here](https://www.cs.york.ac.uk/semeval-2012/task6/data/uploads/datasets/train-readme.txt)
 
+All data can be downloaded via `data/download.sh` script.
 
 # Usage
 
@@ -40,8 +41,8 @@ Results have the following format
   'svm_accuracy': 0.574654533198517}}
 ```
 
-In order to use deepPavlovEval, model should have __call__ method which returns
-sentence embeddings given list of tokenized sentences.
+In order to use deepPavlovEval, model should have `.__call__()` method which returns
+sentence embeddings given list of *tokenized* sentences.
 
 ```python
 import numpy as np
@@ -50,7 +51,7 @@ class MyRandomEmbedder:
         return np.random.uniform(size=(len(batch), 300))
 
 my_embedder = MyRandomEmbedder()
-results_random = evaluator.evaluate(my_embedder)
+results_random = evaluator.evaluate(my_embedder, model_name='random_embedder')
 ```
 
 Evaluator object accumulates different experiments. They can be accessed via `.all_results`
@@ -78,19 +79,19 @@ and saved as .jsonl via `.save_results(save_path)`.
    'svm_f1': 0.4482865224076,
    'svm_accuracy': 0.574654533198517}},
  {'task': 'paraphraser',
-  'model': __main__.MyRandomEmbedder,
+  'model': 'random_embedder',
   'metrics': {'pearson correlation': -0.004955005150548055}},
  {'task': 'msrvid',
-  'model': __main__.MyRandomEmbedder,
+  'model': 'random_embedder',
   'metrics': {'pearson correlation': 0.025535004548834218}},
  {'task': 'xnli',
-  'model': __main__.MyRandomEmbedder,
+  'model': 'random_embedder',
   'metrics': {'knn_f1': 0.32845812688562903,
    'knn_accuracy': 0.3401197604790419,
    'svm_f1': 0.33784182130058665,
    'svm_accuracy': 0.33812375249501}},
  {'task': 'rusentiment',
-  'model': __main__.MyRandomEmbedder,
+  'model': 'random_embedder',
   'metrics': {'knn_f1': 0.17511439267964699,
    'knn_accuracy': 0.32861476238624876,
    'svm_f1': 0.15701808622986574,
@@ -98,3 +99,5 @@ and saved as .jsonl via `.save_results(save_path)`.
 ```
 
 Read `deepPavlovEval/evaluator.py` for full api description.
+
+More examples in `deeppavlov_models.ipynb`.

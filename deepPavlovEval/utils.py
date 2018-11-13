@@ -72,6 +72,13 @@ def _best_score(similarities, labels, target_metric, step=1e-3):
     return best_score, best_t
 
 
+def _maybe_tokenize(x):
+    if isinstance(x, str):
+        return word_tokenize(x)
+    else:
+        return x
+
+
 def _get_embeddings(embedder, dataset):
     sents1 = []
     labels = []
@@ -82,13 +89,6 @@ def _get_embeddings(embedder, dataset):
 
     s1_emb = np.array(embedder(sents1))
     return s1_emb, labels
-
-
-def _maybe_tokenize(x):
-    if isinstance(x, str):
-        return word_tokenize(x)
-    else:
-        return x
 
 
 def _get_embeddings_pairwise(embedder, dataset):

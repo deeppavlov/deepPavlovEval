@@ -7,22 +7,24 @@ import pandas as pd
 class STSReader:
     """
     Data description:
-        data_path is directory with two files:
-            input.txt
-            labels.txt
+        data_path is a directory with two files:
+            input_fname
+            labels_fname
 
-        input.txt file structure:
+        input_fname file structure:
             tab-separated pair of sentences on each line
-        input.txt file structure:
+        labels_fname file structure:
             floatable number on each line - sentence similarity
 
+        where input_fname and labels_fname are .__init__() parameters
+        with default values
     Example:
-        input.txt:
+        input_fname:
 
         A woman and man are dancing in the rain.	A man and woman are dancing in rain.
         Someone is drawing.	Someone is dancing.
 
-        input.txt:
+        labels_fname:
 
         5.000
         0.300
@@ -53,7 +55,7 @@ class XNLIReader:
 
     Return:
         {'valid': valid_set, 'test': test_set}
-        where valid_set and test_set are np.arrays [(sent1, sent2, label), ...]
+        where valid_set and test_set are np.arrays [((sent1, sent2), label), ...]
     """
     def read(self, data_path, valid_fname='xnli.dev.tsv', test_fname='xnli.test.tsv', lang=None):
         data_path = Path(data_path)
