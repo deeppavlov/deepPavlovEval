@@ -26,7 +26,7 @@ class Evaluator:
         Class for sentence embeddings evaluations
 
         Params:
-            tasks: subset of ['paraphraser', 'msrvid', 'xnli', 'rusentiment', 'sberfaq']
+            tasks: subset of ['paraphraser', 'msrvid', 'xnli', 'rusentiment']
                    if None (default), use all of them
             datasets_root: path to directory with datasets
                            if None (default), uses ./data directory
@@ -37,7 +37,12 @@ class Evaluator:
             self.datasets_root = Path(datasets_root)
 
         if tasks is None:
-            tasks = ['paraphraser', 'msrvid', 'xnli', 'rusentiment', 'sberfaq']
+            tasks = ['paraphraser', 'msrvid', 'xnli', 'rusentiment']
+
+        self.classification_tasks = ['rusentiment']
+        self.paraphraser_tasks = ['paraphraser']
+        self.semantic_similarity_tasks = ['msrvid']
+        self.pairwise_classification_tasks = ['xnli']
 
         try:
             self.task2data = self._load_datasets(self.datasets_root, tasks)
@@ -79,6 +84,32 @@ class Evaluator:
             print(f'{kwarg} parameter will be ignored')
             kwargs.pop(kwarg)
         return kwargs
+    
+    def add_task(self, task_name, dataset_dict, task_type='classification'):
+        """
+        Add custom task to evaluator.
+        
+        Params:
+            task_name: str, used for results saving and plotting
+            dataset_dict: dict, see deepPavlovEval.datautils for more info, depends on task type
+            task_type:
+
+                * classification - for one sentence classification
+                * pairwise_classification - for two sentences classification (like NLI)
+                * paraphraser - for paraphrase detection
+                * semantic similarity - for SST-like tasks (similarity scores, not classes)
+        """
+        self.task2data[task_name] = dataset_dict
+        if task_type == 'classification':
+            self.classification_tasks.append(task_name)
+        elif task_type == 'pairwise_classification':
+            self.pairwise_classification_tasks.append(task_name)
+        elif task_type == 'paraphraser':
+            self.paraphraser_tasks.append(task_name)
+        elif task_type == 'semantic_similarity':
+            self.semantic_similarity_tasks.append(task_name)
+        else:
+            raise ValueError(task_type)
 
     def evaluate(self, embedder, model_name=None):
         """
@@ -94,9 +125,11 @@ class Evaluator:
         model_name = model_name or type(embedder)
 
         for task, data in self.task2data.items():
-            if task in ['paraphraser', 'msrvid']:
+            if task in self.semantic_similarity_tasks:
                 results[task] = evaluate_embedder_pairwise(embedder, data)
-            elif task == 'xnli':
+            elif task in self.paraphraser_tasks:
+                results[task] = evaluate_embedder_pairwise(embedder, data, classification=True)
+            elif task in self.pairwise_classification_tasks:
                 results[task] = evaluate_embedder_nli(embedder, data)
             else:
                 results[task] = evaluate_embedder_clf(embedder, data)
@@ -158,6 +191,7 @@ class Evaluator:
         for task in self.task2data.keys():
             all_task_results = [x for x in results if x['task'] == task]
             if not all_task_results:
+                print(f'No results for task {task}')
                 continue
             to_plot = {res['model']: res['metrics'] for res in all_task_results}
             ax = pd.DataFrame(to_plot).plot(kind='barh', figsize=figsize, title=task, **plot_kwargs)
