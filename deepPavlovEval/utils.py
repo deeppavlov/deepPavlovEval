@@ -8,7 +8,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 
 def evaluate_embedder_pairwise(embedder, dataset_dict,
-                               classification=False, target_metric=accuracy_score):
+                               classification=False):
     similarities, labels = _get_similarities(embedder, dataset_dict['test'])
     results = {'pearson correlation': pearsonr(similarities, labels)[0]}
 
