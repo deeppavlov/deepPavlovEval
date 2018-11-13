@@ -127,8 +127,6 @@ class Evaluator:
 
     def plot_results(self, results=None, save=None, show=False, **plot_kwargs):
         """
-
-
         Params:
             results: results dict to plot
                      if None (default), plots .all_results
