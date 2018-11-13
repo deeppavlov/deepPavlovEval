@@ -1,9 +1,13 @@
 import os
 import json
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn
+seaborn.set()
 
 from nltk import word_tokenize
 from scipy.stats import pearsonr
@@ -35,7 +39,11 @@ class Evaluator:
         if tasks is None:
             tasks = ['paraphraser', 'msrvid', 'xnli', 'rusentiment', 'sberfaq']
 
-        self.task2data = self._load_datasets(self.datasets_root, tasks)
+        try:
+            self.task2data = self._load_datasets(self.datasets_root, tasks)
+        except FileNotFoundError:
+            raise FileNotFoundError('Download datasets first')
+
         self.all_results = []
 
     @staticmethod
@@ -63,18 +71,14 @@ class Evaluator:
                 x='text',
                 y='label')
 
-        # if 'sberfaq' in tasks:
-        #     task2data['sberfaq'] = BasicClassificationDatasetReader().read(
-        #         datasets_root / 'SBER_FAQ',
-        #         train='sber_faq_train.csv',
-        #         valid='sber_faq_valid.csv',
-        #         test='sber_faq_test.csv',
-        #         names=['label', 'text'],
-        #         sep='\t',
-        #         x='text',
-        #         y='label')
-
         return task2data
+
+    @staticmethod
+    def _ignore_kwarg(kwarg, kwargs):
+        if kwarg in kwargs:
+            print(f'{kwarg} parameter will be ignored')
+            kwargs.pop(kwarg)
+        return kwargs
 
     def evaluate(self, embedder, model_name=None):
         """
@@ -111,5 +115,57 @@ class Evaluator:
                 json.dump(entry, outfile)
                 outfile.write('\n')
 
+    def load_results(self, loadpath):
+        with open(loadpath, 'r') as infile:
+            file_content = infile.read().strip().split('\n')
+            results = [json.loads(jline) for jline in file_content]
+        self.all_results += results
+        return results
+
     def reset_results(self):
         self.all_results = []
+
+    def plot_results(self, results=None, save=None, show=False, **plot_kwargs):
+        """
+
+
+        Params:
+            results: results dict to plot
+                     if None (default), plots .all_results
+            save: bool or str, save plots to directory with default path (bool) or save (str)
+                      default path: results/current_time/
+            show: if True, call plt.show()
+            plot_kwargs: kwargs for pandas plot function
+        """
+        if not (save or show):
+            raise ValueError('save or show should be specified')
+
+        if save:
+            if isinstance(save, str):
+                savedir = Path(save)
+            else:
+                current_time = datetime.now().strftime('%b%d_%H-%M-%S')
+                savedir = Path('results') / current_time
+            os.makedirs(savedir, exist_ok=True)
+        
+        # check plot kwargs
+        if 'figsize' in plot_kwargs:
+            figsize = plot_kwargs.pop('figsize')
+        else:
+            figsize = (12, 10)
+        plot_kwargs = self.__class__._ignore_kwarg('kind', plot_kwargs)
+        plot_kwargs = self.__class__._ignore_kwarg('title', plot_kwargs)
+
+        results = results or self.all_results
+        for task in self.task2data.keys():
+            all_task_results = [x for x in results if x['task'] == task]
+            if not all_task_results:
+                continue
+            to_plot = {res['model']: res['metrics'] for res in all_task_results}
+            ax = pd.DataFrame(to_plot).plot(kind='barh', figsize=figsize, title=task, **plot_kwargs)
+
+            if save:
+                ax.get_figure().savefig(savedir / f'{task}.png')
+
+        if show:
+            plt.show()

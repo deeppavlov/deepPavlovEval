@@ -1,6 +1,19 @@
 # deepPavlovEval
 Sentence embeddings evaluation for russian tasks.
 
+## Datasets and tasks
+Currently we support the following tasks:
+
+|  Task                         | Dataset           | Dataset URL                                                            |
+|-------------------------------|-------------------|------------------------------------------------------------------------|
+|  Paraphrase detection         | Paraphraser       | http://files.deeppavlov.ai/deeppavlov_data/paraphrase_ident_qqp.tar.gz |
+|  Semantic textual similarity  | translated MSRVid | http://files.deeppavlov.ai/datasets/STS2012_MSRvid_translated.tar.gz   |
+|  Natural language inference   | XNLI              | http://www.nyu.edu/projects/bowman/xnli/                               |
+|  Sentiment analysis           | Rusentiment       | http://text-machine.cs.uml.edu/projects/rusentiment/                   |
+
+MSRVid is part of SEMEVAL-2012 TASK 17 dataset. It was automatically translated and checked manually. Original dataset and licence can be found [here](https://www.cs.york.ac.uk/semeval-2012/task6/data/uploads/datasets/train-readme.txt)
+
+
 # Usage
 
 ```python
@@ -40,7 +53,7 @@ my_embedder = MyRandomEmbedder()
 results_random = evaluator.evaluate(my_embedder)
 ```
 
-Evaluator object accumulates different experiments. They can be triggered via `.all_results`
+Evaluator object accumulates different experiments. They can be accessed via `.all_results`
 and saved as .jsonl via `.save_results(save_path)`.
 
 ```python
@@ -83,3 +96,5 @@ and saved as .jsonl via `.save_results(save_path)`.
    'svm_f1': 0.15701808622986574,
    'svm_accuracy': 0.4236602628918099}}]
 ```
+
+Read `deepPavlovEval/evaluator.py` for full api description.

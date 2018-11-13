@@ -13,6 +13,7 @@ class ELMoEmbedder:
 
         self.mean = mean
         self.model = ELMoEmbedder_hub(spec_url, elmo_output_names=elmo_output_names)
+        self.dim = self.model.dim
 
     def __call__(self, batch, mean=None):
         return self.model(batch)
