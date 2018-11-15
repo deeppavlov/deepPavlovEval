@@ -10,8 +10,6 @@ class DocsText(unittest.TestCase):
     def test_basic_usage_does_not_fail(self):
 
         evaluator = Evaluator()
-        fasttext = FasttextEmbedder('/data/embeddings/wiki.ru.bin', mean=True)
-        results_fasttext = evaluator.evaluate(fasttext)
 
         class MyRandomEmbedder:
             def __call__(self, batch):

@@ -42,7 +42,7 @@ Results have the following format
 ```
 
 In order to use deepPavlovEval, model should have `.__call__()` method which returns
-sentence embeddings given list of *tokenized* sentences.
+sentence embeddings given list of *tokenized* sentences. For example: `[['first', 'sentence'], ['second', 'sentence']]`
 
 ```python
 import numpy as np
