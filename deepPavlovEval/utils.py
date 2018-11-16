@@ -9,10 +9,12 @@ from sklearn.neighbors import KNeighborsClassifier
 
 def evaluate_embedder_pairwise(embedder, dataset_dict,
                                classification=False):
-    similarities, labels = _get_similarities(embedder, dataset_dict['test'])
-    results = {'pearson correlation': pearsonr(similarities, labels)[0]}
 
-    if classification:
+    if not classification:
+        similarities, labels = _get_similarities(embedder, dataset_dict['test'])
+        results = {'pearson correlation': pearsonr(similarities, labels)[0]}
+
+    else:
         if len(set(labels)) != 2:
             raise RuntimeError('only binary classification is supported')
 
@@ -126,8 +128,8 @@ def _get_clf_scores(x_train, y_train, x_test, y_test):
     predictions = model.predict(x_test)
 
     results = {
-        'knn_f1': f1_score(y_test, predictions, average='macro'),
-        'knn_accuracy': accuracy_score(y_test, predictions)
+        'f1(clf_knn)': f1_score(y_test, predictions, average='macro'),
+        'accuracy(clf_knn)': accuracy_score(y_test, predictions)
     }
     
     model = LinearSVC()
@@ -135,8 +137,8 @@ def _get_clf_scores(x_train, y_train, x_test, y_test):
     
     predictions = model.predict(x_test)
     results.update({
-        'svm_f1': f1_score(y_test, predictions, average='macro'),
-        'svm_accuracy': accuracy_score(y_test, predictions)
+        'f1(clf_svm)': f1_score(y_test, predictions, average='macro'),
+        'accuracy(clf_svm)': accuracy_score(y_test, predictions)
     })
     
     return results

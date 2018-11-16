@@ -162,7 +162,7 @@ class Evaluator:
     def reset_results(self):
         self.all_results = []
 
-    def plot_results(self, results=None, save=None, show=False, **plot_kwargs):
+    def plot_results(self, results=None, save=None, show=False, kind='bar', **plot_kwargs):
         """
         Params:
             results: results dict to plot
@@ -188,7 +188,6 @@ class Evaluator:
             figsize = plot_kwargs.pop('figsize')
         else:
             figsize = (12, 10)
-        plot_kwargs = self.__class__._ignore_kwarg('kind', plot_kwargs)
         plot_kwargs = self.__class__._ignore_kwarg('title', plot_kwargs)
 
         results = results or self.all_results
@@ -198,7 +197,7 @@ class Evaluator:
                 print(f'No results for task {task}')
                 continue
             to_plot = {res['model']: res['metrics'] for res in all_task_results}
-            ax = pd.DataFrame(to_plot).plot(kind='barh', figsize=figsize, title=task, **plot_kwargs)
+            ax = pd.DataFrame(to_plot).plot(kind=kind, figsize=figsize, title=task, **plot_kwargs)
 
             if save:
                 ax.get_figure().savefig(savedir / f'{task}.png')
