@@ -7,11 +7,11 @@ from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 
 
-def evaluate_embedder_pairwise(embedder, dataset_dict,
+def evaluate_embedder_pairwise(embedder, dataset_dict, tokenize
                                classification=False):
 
     if not classification:
-        similarities, labels = _get_similarities(embedder, dataset_dict['test'])
+        similarities, labels = _get_similarities(embedder, dataset_dict['test'], tokenize)
         results = {'pearson correlation': pearsonr(similarities, labels)[0]}
 
     else:
@@ -22,7 +22,7 @@ def evaluate_embedder_pairwise(embedder, dataset_dict,
             set_name = 'train'
             if not dataset_dict.get('train', []):
                 set_name = 'valid'
-            similarities_valid, labels_valid = _get_similarities(embedder, dataset_dict[set_name])
+            similarities_valid, labels_valid = _get_similarities(embedder, dataset_dict[set_name], tokenize)
 
             _, best_t = _best_score(similarities_valid, labels_valid, f1_score)
             best_f1 = f1_score(labels, similarities > best_t)
@@ -41,19 +41,19 @@ def evaluate_embedder_pairwise(embedder, dataset_dict,
     return results
 
 
-def evaluate_embedder_clf(embedder, dataset_dict):
-    embeddings, labels = _get_embeddings(embedder, dataset_dict['train'])
-    embeddings_test, labels_test = _get_embeddings(embedder, dataset_dict['test'])
+def evaluate_embedder_clf(embedder, dataset_dict, tokenize):
+    embeddings, labels = _get_embeddings(embedder, dataset_dict['train'], tokenize)
+    embeddings_test, labels_test = _get_embeddings(embedder, dataset_dict['test'], tokenize)
     
     results = _get_clf_scores(embeddings, labels, embeddings_test, labels_test)
     return results
 
 
-def evaluate_embedder_nli(embedder, dataset_dict):
-    (s1_emb, s2_emb), labels = _get_embeddings_pairwise(embedder, dataset_dict['train'])
+def evaluate_embedder_nli(embedder, dataset_dict, tokenize):
+    (s1_emb, s2_emb), labels = _get_embeddings_pairwise(embedder, dataset_dict['train'], tokenize)
     features = np.concatenate([s1_emb, s2_emb], 1)
 
-    (s1_emb, s2_emb), labels_test = _get_embeddings_pairwise(embedder, dataset_dict['test'])
+    (s1_emb, s2_emb), labels_test = _get_embeddings_pairwise(embedder, dataset_dict['test'], tokenize)
     features_test = np.concatenate([s1_emb, s2_emb], 1)
 
     results = _get_clf_scores(features, labels, features_test, labels_test)
@@ -81,26 +81,31 @@ def _maybe_tokenize(x):
         return x
 
 
-def _get_embeddings(embedder, dataset):
+def _get_embeddings(embedder, dataset, tokenize):
     sents1 = []
     labels = []
 
     for sent1, label in dataset:
-        sents1.append(_maybe_tokenize(sent1))
+        if tokenize:
+            sent1 = _maybe_tokenize(sent1)
+        sents1.append(sent1)
         labels.append(label)
 
     s1_emb = np.array(embedder(sents1))
     return s1_emb, labels
 
 
-def _get_embeddings_pairwise(embedder, dataset):
+def _get_embeddings_pairwise(embedder, dataset, tokenize):
     sents1 = []
     sents2 = []
     labels = []
 
     for (sent1, sent2), label in dataset:
-        sents1.append(_maybe_tokenize(sent1))
-        sents2.append(_maybe_tokenize(sent2))
+        if tokenize:
+            sent1 = _maybe_tokenize(sent1)
+            sent2 = _maybe_tokenize(sent2)
+        sents1.append(sent1)
+        sents2.append(sent2)
         labels.append(label)
 
     s1_emb = np.array(embedder(sents1))
@@ -115,8 +120,8 @@ def _cosine_similarity(v1, v2):
     return np.sum(v1_norm * v2_norm, axis=1)
 
 
-def _get_similarities(embedder, dataset):
-    (s1_emb, s2_emb), labels = _get_embeddings_pairwise(embedder, dataset)
+def _get_similarities(embedder, dataset, tokenize):
+    (s1_emb, s2_emb), labels = _get_embeddings_pairwise(embedder, dataset, tokenize)
     similarities = _cosine_similarity(s1_emb, s2_emb)
 
     return similarities, labels

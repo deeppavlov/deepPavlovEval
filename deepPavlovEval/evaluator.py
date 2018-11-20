@@ -111,7 +111,7 @@ class Evaluator:
         else:
             raise ValueError(task_type)
 
-    def evaluate(self, embedder, model_name=None, tasks=None):
+    def evaluate(self, embedder, model_name=None, tasks=None, input_type='tokens'):
         """
         Evaluate embedder on tasks
 
@@ -121,7 +121,13 @@ class Evaluator:
             model_name: used for global results logging
                         default: type(embedder)
             tasks: tasks for evaluation on, default is all
+            input_type: tokens or string, if tokens texts will be tokenized
+                        before embedding
         """
+        tokenize = True
+        if input_type != 'tokens':
+            tokenize = False
+
         tasks = tasks or list(self.task2data.keys())
         results = {}
         model_name = model_name or type(embedder)
@@ -130,13 +136,13 @@ class Evaluator:
             if task not in tasks:
                 continue
             if task in self.semantic_similarity_tasks:
-                results[task] = evaluate_embedder_pairwise(embedder, data)
+                results[task] = evaluate_embedder_pairwise(embedder, data, tokenize)
             elif task in self.paraphraser_tasks:
-                results[task] = evaluate_embedder_pairwise(embedder, data, classification=True)
+                results[task] = evaluate_embedder_pairwise(embedder, data, tokenize, classification=True)
             elif task in self.pairwise_classification_tasks:
-                results[task] = evaluate_embedder_nli(embedder, data)
+                results[task] = evaluate_embedder_nli(embedder, data, tokenize)
             else:
-                results[task] = evaluate_embedder_clf(embedder, data)
+                results[task] = evaluate_embedder_clf(embedder, data, tokenize)
 
         for task, res in results.items():
             self.all_results.append({'task': task, 'model': model_name, 'metrics': res})
