@@ -7,11 +7,12 @@ from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 
 
-def evaluate_embedder_pairwise(embedder, dataset_dict, tokenize
+def evaluate_embedder_pairwise(embedder, dataset_dict, tokenize,
                                classification=False):
 
+    similarities, labels = _get_similarities(embedder, dataset_dict['test'], tokenize)
+
     if not classification:
-        similarities, labels = _get_similarities(embedder, dataset_dict['test'], tokenize)
         results = {'pearson correlation': pearsonr(similarities, labels)[0]}
 
     else:
@@ -33,10 +34,9 @@ def evaluate_embedder_pairwise(embedder, dataset_dict, tokenize
             best_f1 = f1_score(labels, similarities > .5)
             best_acc = accuracy_score(labels, similarities > .5)
         roc_auc = roc_auc_score(labels, similarities)
-        results.update({
-            'f1_best': best_f1,
-            'accuracy_best': best_acc,
-            'roc_auc': roc_auc})
+        results = {'f1_best': best_f1,
+                   'accuracy_best': best_acc,
+                   'roc_auc': roc_auc}
 
     return results
 
