@@ -111,7 +111,8 @@ class Evaluator:
         else:
             raise ValueError(task_type)
 
-    def evaluate(self, embedder, model_name=None, tasks=None, input_type='tokens'):
+    def evaluate(self, embedder, model_name=None, tasks=None,
+                 input_type='tokens', verbose=False):
         """
         Evaluate embedder on tasks
 
@@ -135,10 +136,13 @@ class Evaluator:
         for task, data in self.task2data.items():
             if task not in tasks:
                 continue
+            if verbose:
+                print(f'Evaluating {model_name} on {task}')
             if task in self.semantic_similarity_tasks:
                 results[task] = evaluate_embedder_pairwise(embedder, data, tokenize)
             elif task in self.paraphraser_tasks:
-                results[task] = evaluate_embedder_pairwise(embedder, data, tokenize, classification=True)
+                results[task] = evaluate_embedder_pairwise(embedder, data, tokenize,
+                                                           classification=True)
             elif task in self.pairwise_classification_tasks:
                 results[task] = evaluate_embedder_nli(embedder, data, tokenize)
             else:
@@ -188,12 +192,10 @@ class Evaluator:
                 current_time = datetime.now().strftime('%b%d_%H-%M-%S')
                 savedir = Path('results') / current_time
             os.makedirs(savedir, exist_ok=True)
-        
+
         # check plot kwargs
-        if 'figsize' in plot_kwargs:
-            figsize = plot_kwargs.pop('figsize')
-        else:
-            figsize = (12, 10)
+        plot_kwargs['figsize'] = plot_kwargs.get('figsize', (12, 10))
+        plot_kwargs['rot'] = plot_kwargs.get('rot', 0)
         plot_kwargs = self.__class__._ignore_kwarg('title', plot_kwargs)
 
         results = results or self.all_results
@@ -203,10 +205,12 @@ class Evaluator:
                 print(f'No results for task {task}')
                 continue
             to_plot = {res['model']: res['metrics'] for res in all_task_results}
-            ax = pd.DataFrame(to_plot).plot(kind=kind, figsize=figsize, title=task, **plot_kwargs)
+            ax = pd.DataFrame(to_plot).plot(kind=kind, title=task, **plot_kwargs)
 
             if save:
                 ax.get_figure().savefig(savedir / f'{task}.png')
+        if save:
+            self.save_results(savedir)
 
         if show:
             plt.show()
