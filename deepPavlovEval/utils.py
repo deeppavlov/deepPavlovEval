@@ -33,7 +33,13 @@ def evaluate_embedder_pairwise(embedder, dataset_dict, tokenize,
         else:
             best_f1 = f1_score(labels, similarities > .5)
             best_acc = accuracy_score(labels, similarities > .5)
-        roc_auc = roc_auc_score(labels, similarities)
+        try:
+            roc_auc = roc_auc_score(labels, similarities)
+        except Exception as e:
+            print('Error while computing roc_auc_score')
+            print(e)
+            roc_auc = 0
+
         results = {'f1_best': best_f1,
                    'accuracy_best': best_acc,
                    'roc_auc': roc_auc}
@@ -127,16 +133,21 @@ def _get_similarities(embedder, dataset, tokenize):
     return similarities, labels
 
 def _get_clf_scores(x_train, y_train, x_test, y_test):
-    model = KNeighborsClassifier()
-    model.fit(x_train, y_train)
 
-    predictions = model.predict(x_test)
+    try:
+        model = KNeighborsClassifier()
+        model.fit(x_train, y_train)
 
-    results = {
-        'f1(clf_knn)': f1_score(y_test, predictions, average='macro'),
-        'accuracy(clf_knn)': accuracy_score(y_test, predictions)
-    }
-    
+        predictions = model.predict(x_test)
+
+        results = {
+            'f1(clf_knn)': f1_score(y_test, predictions, average='macro'),
+            'accuracy(clf_knn)': accuracy_score(y_test, predictions)
+        }
+    except Exception as e:
+        print('Exception occured while evaluating with KNN')
+        print(e)
+
     model = LinearSVC()
     model.fit(x_train, y_train)
     

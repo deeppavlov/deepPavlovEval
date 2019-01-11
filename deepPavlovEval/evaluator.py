@@ -210,7 +210,7 @@ class Evaluator:
             if save:
                 ax.get_figure().savefig(savedir / f'{task}.png')
         if save:
-            self.save_results(savedir)
+            self.save_results(savedir / 'results.jsonl')
 
         if show:
             plt.show()

@@ -20,7 +20,7 @@ import extract_features as bert
 class BERtEmbedder:
     def __init__(self, vocab_file, bert_config_file, init_checkpoint,
                  batch_size=16, max_seq_length=128, mean=True,
-                 pooling_strategy='CLS', verbosity=tf.logging.ERROR):
+                 topn_layers=4, pooling_strategy='CLS', verbosity=tf.logging.ERROR):
         """
         Parameters:
             vocab_file: bert vocab file
@@ -29,6 +29,7 @@ class BERtEmbedder:
             batch_size: batch size
             max_seq_length: padding length
             mean: return sentence vectors instead of token vectors
+            topn_layers: number of layers to mean (from the last layer to topn)
             pooling_strategy: CLS or mean - use vector for [CLS] token or
                               average BERT word vectors (BERT paper for more info)
             verbosity: tf.logging verbose level. Ignored, if None
@@ -46,6 +47,7 @@ class BERtEmbedder:
             vocab_file=str(vocab_file), do_lower_case=True)
         self.max_seq_length = max_seq_length
         self.pooling_strategy = pooling_strategy
+        self.topn_layers = topn_layers
 
         self.mean = mean
 
@@ -54,7 +56,7 @@ class BERtEmbedder:
         self.model_fn = bert.model_fn_builder(
           bert_config=self.config,
           init_checkpoint=str(init_checkpoint),
-          layer_indexes=(-1,),
+          layer_indexes=list(range(-self.topn_layers, 0)),
           use_tpu=False,
           use_one_hot_embeddings=False)
 
@@ -94,7 +96,7 @@ class BERtEmbedder:
         if strategy.lower() == 'cls':
             return layer_output[0]
         if strategy.lower() == 'mean':
-            return np.mean(layer_output, 0)
+            return np.mean(layer_output[1:], 0)
 
     def __call__(self, batch):
         """
@@ -116,7 +118,7 @@ class BERtEmbedder:
         
         embeddings = []
         for result in results:
-            layer_output = result['layer_output_0']  # last layer
+            layer_output = np.mean([result[f'layer_output_{i}'] for i in range(self.topn_layers)], 1)  # last layer
             if self.mean:
                 embedding = self._pool(layer_output, self.pooling_strategy)
             else:
