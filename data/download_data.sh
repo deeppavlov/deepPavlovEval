@@ -1,3 +1,5 @@
+#!/bin/sh
+
 echo 'Paraphraser'
 wget -O Paraphraser.zip 'http://paraphraser.ru/download/get?file_id=1'
 unzip Paraphraser.zip -d Paraphraser && rm -f Paraphraser.zip
