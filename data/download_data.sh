@@ -15,8 +15,8 @@ wget http://www.nyu.edu/projects/bowman/xnli/XNLI-1.0.zip
 unzip XNLI-1.0.zip && rm -f XNLI-1.0.zip
 rm -rf __MACOSX
 
-echo 'Rusentiment'
-git clone --depth=1 --branch=master https://github.com/text-machine-lab/rusentiment Rusentiment
-rm -rf !$/.git
-mv Rusentiment/Dataset/* Rusentiment
-rm -rf Rusentiment/Dataset
+# echo 'Rusentiment'
+# git clone --depth=1 --branch=master https://github.com/text-machine-lab/rusentiment Rusentiment
+# rm -rf !$/.git
+# mv Rusentiment/Dataset/* Rusentiment
+# rm -rf Rusentiment/Dataset

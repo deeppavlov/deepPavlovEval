@@ -37,7 +37,8 @@ class Evaluator:
             self.datasets_root = Path(datasets_root)
 
         if tasks is None:
-            tasks = ['paraphraser', 'msrvid', 'xnli', 'rusentiment']
+            # "rusentiment" is not included by default
+            tasks = ['paraphraser', 'msrvid', 'xnli']
 
         self.classification_tasks = ['rusentiment']
         self.paraphraser_tasks = ['paraphraser']
