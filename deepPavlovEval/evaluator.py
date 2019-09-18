@@ -131,7 +131,7 @@ class Evaluator:
 
         tasks = tasks or list(self.task2data.keys())
         results = {}
-        model_name = model_name or type(embedder)
+        model_name = model_name or type(embedder).__name__
 
         for task, data in self.task2data.items():
             if task not in tasks:
