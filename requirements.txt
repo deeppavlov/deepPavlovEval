@@ -7,7 +7,7 @@ pyparsing
 deeppavlov
 git+https://github.com/deepmipt/fastText.git#egg=fastText==0.8.22
 gensim==2.3.0
-tensorflow-gpu==1.10.0
+tensorflow-gpu==2.5.3
 scipy
 sklearn
 matplotlib
